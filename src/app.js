@@ -1,11 +1,12 @@
 const express= require("express");
-const connectDB = require("./config/database")
+const connectDB = require("./config/database");
 const app=express();
-const User=require("./models/users")
+const User=require("./models/users");
+const validator=require("validator");
 
 app.use(express.json())
 
-//create user
+//create user - NEVER TRUST req.body
 app.post("/signup", async (req,res) => {
     // const userObj = {
     //     firstName: "Virat",
@@ -15,14 +16,16 @@ app.post("/signup", async (req,res) => {
     // }
   //creating a new instance of user model
     // const user = new User(userObj);
-    
     console.log(req.body)
-    const user = new User(req.body)
    try {
+    if(!validator.isEmail(req.body.emailId)){
+        throw new Error("Email is not valid: "+ req.body.emailId)
+    }
+    const user = new User(req.body)
     await user.save();
     res.send("User added successfully.")
        }catch(err){
-    res.status(400).send("User not created."+err.message);
+    res.status(400).send("User not created: " +err.message);
     }
 });
 
@@ -59,14 +62,27 @@ app.delete("/user", async (req,res) => {
     }
 });
 
-//update a user
-app.patch("/user",async (req,res)=>{
+//update a user - NEVER TRUST req.body
+app.patch("/user/:userID",async (req,res)=>{
+    const userId = req.params?.userID;
+    const data= req.body
     try{
-       const user= await User.findByIdAndUpdate(req.body.userId, req.body, {returnDocument:'after'});// It'll only update the the fields which are present in our Model schema. It will ignore userID sent from client.
+        //API level data sanitization to check updating only the fields allowed for the updates
+       const allowedUpdates = ["photoUrl","about","gender","age","skills"];
+       const isUpdateAllowed = Object.keys(data).every((k) => allowedUpdates.includes(k));
+       if(!isUpdateAllowed){ throw new Error("Update not allowed");} 
+
+       //API level data sanitization to check skills not more that 10
+       if(data?.skills?.length>10){ throw new Error("Skills cannot be more than 10");}
+
+       const user= await User.findByIdAndUpdate(userId, data, 
+        { returnDocument:'after', runValidators:true, } //to run run DB level validate functions for patch/update request too. else DB level validators will only run for post/create request.
+        );// It'll only update the the fields which are present in our Model schema. It will ignore userID sent from client.
        console.log(user);
        res.send("User updated successfully.")
+
     }catch(err){
-        res.status(400).send("Unable to update user: "+err.message);
+        res.status(400).send("UPDATE FAILED: "+err.message);
     }
 })
 
