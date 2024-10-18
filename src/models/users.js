@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
+const bcrypt = require('bcrypt');
+var jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema(
     {
@@ -65,6 +67,21 @@ const userSchema = new mongoose.Schema(
     },
 }, { timestamps:true })
 
+
+userSchema.methods.validatePassword = async function(passwordInputByUser){
+    //passwword validation\
+    const user=this;
+    const passwordHash = user.password;
+    const isPasswordValid=await bcrypt.compare(passwordInputByUser,passwordHash);
+    return isPasswordValid;
+}
+
+userSchema.methods.getJWT = async function(){
+    const user = this;
+    
+    const token = jwt.sign({ userId: user._id }, 'DevTinder#200', { expiresIn: 60 });
+    return token;
+}
 // const User = mongoose.model("User", userSchema); //name starts with capital for Model to be conventionally correct , with this model we will create new new instances of user to add in DB.i.e creating a new user.
 
 // module.exports = mongoose.model("Person", userSchema); //will create 'people' collection in MongoDB, when any document of this model type instance is saved into DB. It'll save it inside this 'people' collection

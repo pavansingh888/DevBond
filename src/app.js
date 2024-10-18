@@ -2,11 +2,14 @@ const express= require("express");
 const connectDB = require("./config/database");
 const app=express();
 const User=require("./models/users");
-const validator=require("validator");
 const {validateSignUpData} = require("./utils/validation")
-const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser')
+const {userAuth} = require("./middlewares/auth")
+
 
 app.use(express.json())
+app.use(cookieParser())
+
 
 //create user - NEVER TRUST req.body
 app.post("/signup", async (req,res) => {
@@ -46,81 +49,47 @@ try {
 //login user after comparing credentials
 app.post("/login",async (req,res)=>{
     try {
-    const {emailId, password} = req.body;
-    const user = await User.findOne({emailId:emailId});
-    if(!user){
-        throw new Error("Invalid user credentials!")
-    }
-
-    const storedPassword = user.password;
-    const isPasswordValid=await bcrypt.compare(password,storedPassword);
-    if(isPasswordValid){
-        res.send("Login succesfull!!!")
-    }else{
-        throw new Error("Invalid user credentials!")
-    }    
+            //validating email
+            const {emailId, password} = req.body;
+            const user = await User.findOne({emailId:emailId});
+            if(!user){
+                    throw new Error("Invalid user credentials!")
+                }
+            //validating password
+            const isPasswordValid=await user.validatePassword(password); //Using schema method
+        
+            if(isPasswordValid){
+                //generating JWT auth token
+                const token = await user.getJWT(); //Using schema method
+                //send cookie in response
+                res.cookie("token",token,{ expires: new Date(Date.now() + 900000), httpOnly: true })
+                res.send("Login succesfull!!!")
+            }else{
+                throw new Error("Invalid user credentials!")
+            }    
 
        } catch (err) {
+            res.status(400).send("ERROR : "+err.message);
+       }
+})
+
+
+app.get("/profile",userAuth ,async (req,res) => {
+    try{
+        res.send(req.user.firstName)
+    }catch (err) {
         res.status(400).send("ERROR : "+err.message);
        }
 })
 
-//get a user with emailId
-app.get("/user", async (req,res) => {
-    console.log(req.body.emailId);
-    
-   try {
-    const user = await User.find({emailId: req.body.emailId});
-    res.send(user);
-       }catch(err){
-    res.status(400).send("Unable to fetch user: "+err.message);
-    }
-});
-
-//get all user
-app.get("/feed", async (req,res) => {
-   try {
-    const allUsers = await User.find({});
-    res.send(allUsers);
-       }catch(err){
-    res.status(400).send("Unable to fetch feed: "+err.message);
-    }
-});
-
-//delete a user by ID
-app.delete("/user", async (req,res) => {
-    const userId = req.body.userId;
-   try {
-    await User.findByIdAndDelete(userId);
-    res.send("User deleted successfully!!!");
-       }catch(err){
-    res.status(400).send("Unable to delete user: "+err.message);
-    }
-});
-
-//update a user - NEVER TRUST req.body
-app.patch("/user/:userID",async (req,res)=>{
-    const userId = req.params?.userID;
-    const data= req.body
-    try{
-        //API level data sanitization to check updating only the fields allowed for the updates
-       const allowedUpdates = ["photoUrl","about","gender","age","skills"];
-       const isUpdateAllowed = Object.keys(data).every((k) => allowedUpdates.includes(k));
-       if(!isUpdateAllowed){ throw new Error("Update not allowed");} 
-
-       //API level data sanitization to check skills not more that 10
-       if(data?.skills?.length>10){ throw new Error("Skills cannot be more than 10");}
-
-       const user= await User.findByIdAndUpdate(userId, data, 
-        { returnDocument:'after', runValidators:true, } //to run run DB level validate functions for patch/update request too. else DB level validators will only run for post/create request.
-        );// It'll only update the the fields which are present in our Model schema. It will ignore userID sent from client.
-       console.log(user);
-       res.send("User updated successfully.")
-
-    }catch(err){
-        res.status(400).send("UPDATE FAILED: "+err.message);
-    }
-})
+//send 
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+    const user = req.user;
+    // Sending a connection request
+    console.log("Sending a connection request");
+  
+    res.send(user.firstName + " sent the connect request!");
+  });
 
 
 
