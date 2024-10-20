@@ -25,7 +25,7 @@ const validateEditProfileData = (req)=>{
     "skills",];
 
     const isEditAllowed = Object.keys(req.body).every((key)=> allowedEditFields.includes(key));
-    console.log(isEditAllowed)
+   
     return isEditAllowed;
 }
 

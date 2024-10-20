@@ -16,7 +16,7 @@ authRouter.post("/signup", async (req,res) => {
     // }
   //creating a new instance of user model
     // const user = new User(userObj);
-    console.log(req.body)
+    // console.log(req.body)
 
   
 try {
