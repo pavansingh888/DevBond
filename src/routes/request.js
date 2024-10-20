@@ -15,7 +15,12 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
       const allowedStatus = ["interested","ignored"];
       if(!allowedStatus.includes(status)){
         return res.status(400).json({message: "Invalid status type: "+status});
+      //Using **return res.status(...).json(...)** ensures that:
+      // Execution stops after sending a response.
+      // Prevents duplicate responses or further unintended code execution.
+      // Keeps control flow clean and avoids errors like headers already sent.
       }
+      
      //checking if toUser is present in User DB
       const toUser = await User.findById(toUserId);
       console.log(toUserId)
