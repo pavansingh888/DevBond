@@ -1,9 +1,9 @@
 const express = require("express");
 const requestRouter = express.Router();
-const {userAuth} = require("../middlewares/auth")
-const ConnectionRequest = require("../models/connectionRequest")
-const User = require("../models/users")
-
+const {userAuth} = require("../middlewares/auth");
+const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/users");
+const mongoose = require("mongoose");
 //send Interested or Ignored request.
 requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) => {
     try{
@@ -23,7 +23,7 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
       
      //checking if toUser is present in User DB
       const toUser = await User.findById(toUserId);
-      console.log(toUserId)
+      // console.log(toUserId)
       if(!toUser){
         return res.status(400).json({message: "User not found!"});
       }
@@ -59,11 +59,48 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
 
 
 
-
     }catch(err){
       res.status(400).send("ERROR : "+ err.message);
     }
   });
 
+requestRouter.post("/request/review/:status/:requestId",userAuth, async (req,res) => {
+  try{
+    const loggedInUser = req.user;
+    const {requestId,status} = req.params;
+
+    //checking if update status request is for accepting or rejecting the connection request
+    if(!["accepted","rejected"].includes(status)){
+      return res.status(400).json({messsage:"Status not allowed!"});
+    }
+
+    // checking if the requestId is valid mongoose ObjectId
+    const isValidId = mongoose.Types.ObjectId.isValid(requestId);
+    if (!isValidId) {
+      return res.status(400).json({ message: "Invalid requestId format" });
+    }
+
+    //fetching connection request with given requestId(connectionRequestId), where toUserId is the loggedInUser and the status of connectionRequest is in "interested" state
+    const connectionRequest = await ConnectionRequest.findOne({
+      _id:requestId,
+      toUserId:loggedInUser._id,
+      status:"interested"
+    })
+    if(!connectionRequest){
+      return res.status(400).json({message:"Connection request not found!"});
+    }
+
+    //updating connectionRequest status as "accepted" and updating in DB
+    connectionRequest.status= status;
+    const data = await connectionRequest.save(); 
+
+    res.json({message:"Connection request "+status,data});
+
+  }catch(err){
+    res.status(400).send("ERROR : "+err.message)
+  }
+
+
+});
 
   module.exports = requestRouter;
