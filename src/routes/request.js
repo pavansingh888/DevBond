@@ -1,9 +1,10 @@
 const express = require("express");
 const requestRouter = express.Router();
-const {userAuth} = require("../middlewares/auth");
+const {userAuth} = require("../middlewares/authMiddle");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/users");
 const mongoose = require("mongoose");
+
 //send Interested or Ignored request.
 requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) => {
     try{
@@ -31,6 +32,7 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
       const existingConnectionRequest = await ConnectionRequest.findOne({
         $or :[{fromUserId,toUserId},{fromUserId:toUserId,toUserId:fromUserId},],
       });
+      
       if(existingConnectionRequest){
         return res.status(400).json({message: "Connection Request already exists!!"});
       }

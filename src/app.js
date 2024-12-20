@@ -20,14 +20,6 @@ app.use("/",profileRouter);
 app.use("/",requestRouter);
 app.use("/",userRouter);
 
-
-
-
-
-
-
-
-
 connectDB()
   .then(()=>{
     console.log("Connected to Database")
