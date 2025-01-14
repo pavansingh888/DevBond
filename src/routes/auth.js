@@ -25,15 +25,21 @@ try {
   //Encrypt the password
   const { firstName, lastName, emailId, password } = req.body;
   const hashedPassword=await bcrypt.hash(password,10)
-  console.log(hashedPassword);
+//   console.log(hashedPassword);
     const user = new User({
         firstName,
         lastName,
         emailId,
         password:hashedPassword,
     })
-    await user.save();
-    res.send("User added successfully.")
+    const addedUser = await user.save();
+    if(addedUser){
+         //generating JWT auth token
+         const token = await addedUser.getJWT(); //Using schema method
+         //send cookie in response
+         res.cookie("token",token,{ expires: new Date(Date.now() + 3600000), httpOnly: true })
+    }
+    res.send({message:"User added successfully.", data:addedUser})
       
 
    }catch(err){
@@ -57,8 +63,8 @@ authRouter.post("/login",async (req,res)=>{
                 //generating JWT auth token
                 const token = await user.getJWT(); //Using schema method
                 //send cookie in response
-                res.cookie("token",token,{ expires: new Date(Date.now() + 900000), httpOnly: true })
-                res.send("Login succesfull!!!")
+                res.cookie("token",token,{ expires: new Date(Date.now() + 3600000), httpOnly: true })
+                res.send(user)
             }else{
                 throw new Error("Invalid user credentials!")
             }    
