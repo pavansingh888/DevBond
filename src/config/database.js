@@ -1,7 +1,7 @@
 const mongoose=require("mongoose");
 
 const connectDB = async () => {
-  mongoose.connect("mongodb+srv://LearnNode:nWuJTG76pW7cElQQ@learnnode.zn96c.mongodb.net/devBond");
+  mongoose.connect(process.env.DB_CONNECTION_STRING);
 };
 
 module.exports= connectDB;

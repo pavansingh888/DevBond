@@ -4,6 +4,7 @@ const {userAuth} = require("../middlewares/authMiddle");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/users");
 const mongoose = require("mongoose");
+const sendEmail = require("../utils/sendEmail")
 
 //send Interested or Ignored request.
 requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) => {
@@ -46,6 +47,14 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
 
       //saving ConnectionRequest Model object, in ConnectionRequest collection
       const data = await connectionRequest.save();
+
+      //after saving the connection request we will send email of the status was 'interested'
+      try{
+      if(status==='interested'){const emailRes = await sendEmail.run();} //since run() is async and will give us promise
+     }catch(errors){
+       console.log("Error in email notification : ",errors.message)
+     }
+
 
       const message = (function(){
         if(status==="interested"){ return (req.user.firstName + " is "+status+" in "+toUser.firstName)}else{
