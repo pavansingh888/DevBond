@@ -50,7 +50,94 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
 
       //after saving the connection request we will send email of the status was 'interested'
       try{
-      if(status==='interested'){const emailRes = await sendEmail.run();} //since run() is async and will give us promise
+      if(status==='interested'){
+        const requestCreator = req.user.firstName +" "+  req.user.lastName;
+        const mailSubject = "You have new connection request on DevBond!";
+        const mailBody = `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Connection Request</title>
+                <style>
+                  body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f9;
+                    margin: 0;
+                    padding: 0;
+                    color: #333;
+                  }
+                  .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                  }
+                  .header {
+                    background-color: #007bff;
+                    color: #ffffff;
+                    padding: 20px;
+                    text-align: center;
+                    font-size: 24px;
+                  }
+                  .content {
+                    padding: 20px;
+                    text-align: left;
+                    line-height: 1.6;
+                  }
+                  .content p {
+                    margin: 10px 0;
+                  }
+                  .content .btn {
+                    display: inline-block;
+                    margin-top: 20px;
+                    background-color: #007bff;
+                    color: #ffffff;
+                    padding: 10px 20px;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    font-weight: bold;
+                  }
+                  .content .btn:hover {
+                    background-color: #0056b3;
+                  }
+                  .footer {
+                    text-align: center;
+                    padding: 10px;
+                    font-size: 12px;
+                    color: #777;
+                    background-color: #f4f4f9;
+                    border-top: 1px solid #ddd;
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    Connection Request Notification
+                  </div>
+                  <div class="content">
+                    <p>Hi ${toUser.firstName},</p>
+                    <p>You have received a new connection request from <strong>${requestCreator}</strong>.</p>
+                    <p>Click the button below to view and accept or reject the request:</p>
+                    <a href=${"https://devbond.in/requests"} class="btn">View Connection Request</a>
+                    <p>If you have any questions, feel free to contact our support team.</p>
+                    <p>Best regards,</p>
+                    <p>The DevBond Team</p>
+                  </div>
+                  <div class="footer">
+                    &copy; ${new Date().getFullYear()} DevBond. All rights reserved.
+                  </div>
+                </div>
+              </body>
+              </html>
+            `;
+        const mailSender = `notification@devbond.in`;    
+        const mailReciever = toUser.emailId;
+        const emailRes = await sendEmail.run(null,mailSender,mailSubject,mailBody);} //since run() is async and will give us promise
      }catch(errors){
        console.log("Error in email notification : ",errors.message)
      }
