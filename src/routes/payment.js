@@ -101,6 +101,16 @@ paymentRouter.post("/payment/webhook", async (req, res) => {
   }
 });
 
+//verify premium
+paymentRouter.get("/premium/verify", userAuth, async (req, res) => {
+  const user = req.user.toJSON(); //remember to convert data fetched mongodb to toJSON because user will contain a MDB object not a normal object
+  console.log(user);
+  if (user.isPremium) {
+    return res.json({ ...user });
+  }
+  return res.json({ ...user });
+});
+
 
 
 module.exports=paymentRouter
