@@ -63,7 +63,7 @@ authRouter.post("/login",async (req,res)=>{
                 //generating JWT auth token
                 const token = await user.getJWT(); //Using schema method
                 //send cookie in response
-                res.cookie("token",token,{ expires: new Date(Date.now() + 3600000), httpOnly: true })
+                res.cookie("token",token,{ expires: new Date(Date.now() + 36000000), httpOnly: true })
                 res.send(user)
             }else{
                 throw new Error("Invalid user credentials!")
