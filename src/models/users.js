@@ -86,7 +86,7 @@ userSchema.methods.validatePassword = async function(passwordInputByUser){
 userSchema.methods.getJWT = async function(){
     const user = this;
     
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: 600 });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1.5h' });
     return token;
 }
 // const User = mongoose.model("User", userSchema); //name starts with capital for Model to be conventionally correct , with this model we will create new new instances of user to add in DB.i.e creating a new user.

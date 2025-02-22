@@ -49,7 +49,7 @@ paymentRouter.post("/payment/create", userAuth, async (req,res)=>{
 
 })
 
-//RZP will make a call to this API, so we don't need to userAuth here
+//RZP will make a call to this API, so we don't need to use 'userAuth' here
 paymentRouter.post("/payment/webhook", async (req, res) => {
   try {
     console.log("Webhook Called");  

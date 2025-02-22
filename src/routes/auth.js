@@ -37,7 +37,7 @@ try {
          //generating JWT auth token
          const token = await addedUser.getJWT(); //Using schema method
          //send cookie in response
-         res.cookie("token",token,{ expires: new Date(Date.now() + 3600000), httpOnly: true })
+         res.cookie("token",token,{ expires: 5400000, httpOnly: true })
     }
     res.send({message:"User added successfully.", data:addedUser})
       
@@ -63,7 +63,7 @@ authRouter.post("/login",async (req,res)=>{
                 //generating JWT auth token
                 const token = await user.getJWT(); //Using schema method
                 //send cookie in response
-                res.cookie("token",token,{ expires: new Date(Date.now() + 36000000), httpOnly: true })
+                res.cookie("token",token,{ maxAge: 5400000, httpOnly: true })
                 res.send(user)
             }else{
                 throw new Error("Invalid user credentials!")
@@ -77,9 +77,11 @@ authRouter.post("/login",async (req,res)=>{
 //logout and send cookie with null token
 authRouter.post("/logout",async (req,res)=>{
     //do some DB operation/logs operation if required then logout.
-  res
-  .cookie("token",null,{expires:new Date(Date.now())})
-  .send("Logout successfull!")
+    res.clearCookie("token", { 
+        httpOnly: true, 
+        secure: true, 
+        sameSite: "Strict"
+    }).send("Logout successful!");
 })
 
 module.exports = authRouter;

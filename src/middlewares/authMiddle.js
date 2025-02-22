@@ -6,7 +6,7 @@ const userAuth = async (req,res,next)=>{
         const {token} = req.cookies;
         if(!token){
            return res.status(401).send("Please login!"); //401 for Not authorized
-        }
+        }   
           
         const decodedObj = jwt.verify(token,process.env.JWT_SECRET);
       
