@@ -28,7 +28,7 @@ const initializeSocket = (server) => {
       socket.join(roomId); //we do this so that one connection is established in a particular room.
     });
 
-    socket.on("sendMessage", async ({ firstName, lastName, photoUrl, userId, targetUserId, text }) => {
+    socket.on("sendMessage", async ({ firstName, lastName, photoUrl, userId, targetUserId, text, createdAt }) => {
       try {
         //getting room id
         const roomId = getSecretRoomId(userId, targetUserId);
@@ -59,7 +59,7 @@ const initializeSocket = (server) => {
         await chat.save();
 
         //the message that we have got at backend we have to send it to particular room, and emit the message from server to client, basically server is sending the message
-        io.to(roomId).emit("messageRecieved", { senderId:userId, firstName, lastName, text });
+        io.to(roomId).emit("messageRecieved", { senderId:userId, firstName, lastName, text, createdAt });
 
       } catch (err) {
         console.log(err);
