@@ -30,6 +30,7 @@ chatRouter.get("/chat/:targetUserId", userAuth, async (req, res) => {
   
     } catch (err) {
       console.error(err);
+      res.status(500).json({ success: false, message: "Something went wrong", error: err.message });
     }
    
   }else{

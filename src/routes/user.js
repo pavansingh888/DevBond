@@ -3,8 +3,8 @@ const { userAuth } = require("../middlewares/authMiddle");
 const userRouter = express.Router();
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/users");
-
-const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
+const {USER_SAFE_DATA} = require('../utils/constants')
+// const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
 
 userRouter.get("/user/requests/received",userAuth, async (req,res)=>{
     try {
@@ -67,8 +67,7 @@ userRouter.delete("/user/connections/remove/:connectionId", userAuth, async (req
              status:"accepted"}
            ]
       })
-        .populate("fromUserId", USER_SAFE_DATA)
-        .populate("toUserId", USER_SAFE_DATA);
+        
   
       //console.log(connectionRequest);
       
@@ -91,8 +90,8 @@ userRouter.get("/feed", userAuth, async (req,res)=>{
         const loggedInUser = req.user;
 
         const page= parseInt(req.query.page) || 1;
-        let limit= parseInt(req.query.limit) || 10;
-        limit > 50 ? 50 : limit;
+        let limit= parseInt(req.query.limit) || 1;
+        limit > 5 ? 5 : limit;
         const skip = (page-1)*limit;
 
         const connectionRequests = await ConnectionRequest.find({
@@ -117,7 +116,7 @@ userRouter.get("/feed", userAuth, async (req,res)=>{
         .select(USER_SAFE_DATA)
         .skip(skip)
         .limit(limit);
-
+        console.log(users);
         res.json({data:users});
     }catch(err){
         res.status(400).json({message:err.message});
