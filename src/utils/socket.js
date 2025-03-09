@@ -2,6 +2,7 @@ const socket = require("socket.io");
 const crypto = require("crypto");
 const { Chat } = require("../models/chat");
 const ConnectionRequest = require("../models/connectionRequest");
+const { userAuth } = require("../middlewares/authMiddle");
 
 const getSecretRoomId = (userId, targetUserId) => {
   return crypto
@@ -14,15 +15,21 @@ const initializeSocket = (server) => {
   const io = socket(server, {
     cors: {
       origin: "http://localhost:5173",
+      credentials: true,
     },
   });
 
+  io.use(userAuth);
+  
   //this how we basically start listenting to connections
   io.on("connection", (socket) => {
     //handle events
     //whenever we recieve an event, we recieve the same data that is sent from client
     socket.on("joinChat", async ({ userId, targetUserId }) => {
       try {
+        if (!socket.user.isPremium) {
+          return socket.emit("error", { message: "You must be a premium member to join chat." });
+        }
         //to check if userId and targetUserId are friends in DB
         const connectionRequest = await ConnectionRequest.findOne({
           $or: [
@@ -60,6 +67,9 @@ const initializeSocket = (server) => {
         createdAt,
       }) => {
         try {
+          if (!socket.user.isPremium) {
+            return socket.emit("error", { message: "Only premium members can send messages." });
+          }
           //to check if userId and targetUserId are friends in DB
           const connectionRequest = await ConnectionRequest.findOne({
             $or: [
