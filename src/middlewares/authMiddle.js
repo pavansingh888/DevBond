@@ -13,6 +13,7 @@ const userAuth = async (req,res,next)=>{
       
         const {userId} = decodedObj;
         const user = await User.findById(userId).select(USER_SAFE_DATA);
+        // console.log('view : ', user)
         if(!user){
             throw new Error("User not found");
         }

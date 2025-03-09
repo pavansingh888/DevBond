@@ -39,13 +39,13 @@ authRouter.post("/signup", async (req, res) => {
       res.cookie("token", token, { expires: 5400000, httpOnly: true });
     }
 
-    const userData = addedUser.toObject(); //mongoose doc to normal object
+    const userData = addedUser.toObject({getters:true, versionKey:false}); //mongoose doc to normal object
     //selecting only required fields
-    const safeUserData = USER_SAFE_DATA.split().reduce((acc, field) => {
+    const safeUserData = USER_SAFE_DATA.split(" ").reduce((acc, field) => {
       acc[field] = userData[field];
       return acc;
     }, {});
-
+    safeUserData._id=addedUser._id;
     res.send({ message: "User added successfully.", data: safeUserData });
   } catch (err) {
     res.status(400).send("ERROR : " + err.message);
@@ -68,12 +68,14 @@ authRouter.post("/login", async (req, res) => {
       //generating JWT auth token
       const token = await user.getJWT(); //Using schema method
 
-      const userData = user.toObject(); //mongoose doc to normal object
+      const userData = user.toObject({getters:true, versionKey:false}); //mongoose doc to normal object
+      
       //selecting only required fields
-      const safeUserData = USER_SAFE_DATA.split().reduce((acc, field) => {
+      const safeUserData = USER_SAFE_DATA.split(" ").reduce((acc, field) => {
         acc[field] = userData[field];
         return acc;
       }, {});
+      safeUserData._id = user._id;
 
       //send cookie in response
       res.cookie("token", token, { maxAge: 5400000, httpOnly: true });
