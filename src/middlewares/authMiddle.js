@@ -50,7 +50,7 @@ const userAuth = async (reqOrSocket, resOrNext, nextFn) => {
   } catch (err) {
     const errorMessage = "Unauthorized: " + err.message;
     return resOrNext.status
-      ? resOrNext.status(400).send(errorMessage)
+      ? resOrNext.status(401).send(errorMessage)
       : resOrNext(new Error(errorMessage));
   }
 };

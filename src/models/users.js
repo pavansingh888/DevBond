@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
         type: String,
         required:true,
         trim:true,
-        minLength:4,
+        minLength:3,
         maxLength:50,
 
     },
@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
         type: String,
         required:true,
         trim:true,
-        minLength:4,
+        minLength:3,
         maxLength:50,
     },
     emailId: {
