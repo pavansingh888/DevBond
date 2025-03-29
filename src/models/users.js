@@ -30,16 +30,16 @@ const userSchema = new mongoose.Schema(
     password: {
         type: String,
         required:true,
-        validate(value){
-            if(!validator.isStrongPassword(value)){
-                throw new Error("Enter a strong password: ",value)
-            }
-        }
+        // validate(value){
+        //     if(!validator.isStrongPassword(value)){
+        //         throw new Error("Invalid password: Must contain 8+ characters with at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special character: ",value)
+        //     }
+        // }
     },
     age: {
         type: Number,
         min:18,
-
+        max:120,
     },
     gender: {
         type: String,
@@ -68,10 +68,11 @@ const userSchema = new mongoose.Schema(
     about: {
         type: String,
         default: "This is a default about of the user!",
+        maxLength:500,
     },
-    skills: {
-        type: [String],
-    },
+    // skills: {
+    //     type: [String],
+    // },
 }, { timestamps:true })
 
 

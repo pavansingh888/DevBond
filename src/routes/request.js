@@ -2,6 +2,7 @@ const express = require("express");
 const requestRouter = express.Router();
 const {userAuth} = require("../middlewares/authMiddle");
 const ConnectionRequest = require("../models/connectionRequest");
+const { USER_SAFE_DATA } = require("../utils/constants");
 const User = require("../models/users");
 const mongoose = require("mongoose");
 const sendEmail = require("../utils/sendEmail")
@@ -186,10 +187,14 @@ requestRouter.post("/request/review/:status/:requestId",userAuth, async (req,res
     }
 
     //updating connectionRequest status as "accepted" and updating in DB
-    connectionRequest.status= status;
-    const data = await connectionRequest.save(); 
-
-    res.json({message:"Connection request "+status,data});
+    const data = await ConnectionRequest.findByIdAndUpdate(
+      requestId,
+      { status: status },
+      { new: true }
+    ).populate("fromUserId", USER_SAFE_DATA);
+    console.log(data.fromUserId);
+    
+    res.json({message:"Connection request "+status,data:data.fromUserId});
 
   }catch(err){
     res.status(400).send("ERROR : "+err.message)

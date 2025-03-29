@@ -88,11 +88,12 @@ userRouter.delete("/user/connections/remove/:connectionId", userAuth, async (req
 userRouter.get("/feed", userAuth, async (req,res)=>{
     try{
         const loggedInUser = req.user;
-
-        const page= parseInt(req.query.page) || 1;
-        let limit= parseInt(req.query.limit) || 1;
-        limit > 5 ? 5 : limit;
-        const skip = (page-1)*limit;
+        //  console.log(req.query.limit);
+         
+        // const page= parseInt(req.query.page) || 1;
+        let limit= parseInt(req.query.limit) || 5;
+        limit > 10 ? 10 : limit;
+        // const skip = (page-1)*limit;
 
         const connectionRequests = await ConnectionRequest.find({
             $or:[
@@ -114,9 +115,9 @@ userRouter.get("/feed", userAuth, async (req,res)=>{
             ]
         })
         .select(USER_SAFE_DATA)
-        .skip(skip)
+        // .skip(skip)
         .limit(limit);
-        console.log(users);
+        // console.log(users);
         res.json({data:users});
     }catch(err){
         res.status(400).json({message:err.message});

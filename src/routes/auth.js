@@ -22,6 +22,12 @@ authRouter.post("/signup", async (req, res) => {
     validateSignUpData(req);
     //Encrypt the password
     const { firstName, lastName, emailId, password } = req.body;
+    //check whether user already exists with given email
+    const existingUser = await User.findOne({ emailId: emailId });
+    if(existingUser){
+      throw new Error("An account with this email already exists. Please use a different email or try logging in.");
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     //   console.log(hashedPassword);
     const user = new User({
@@ -36,7 +42,7 @@ authRouter.post("/signup", async (req, res) => {
       //generating JWT auth token
       const token = await addedUser.getJWT(); //Using schema method
       //send cookie in response
-      res.cookie("token", token, { expires: 5400000, httpOnly: true });
+      res.cookie("token", token, { expires: new Date(Date.now() + 5400000), httpOnly: true });
     }
 
     const userData = addedUser.toObject({getters:true, versionKey:false}); //mongoose doc to normal object
@@ -48,7 +54,7 @@ authRouter.post("/signup", async (req, res) => {
     safeUserData._id=addedUser._id;
     res.send({ message: "User added successfully.", data: safeUserData });
   } catch (err) {
-    res.status(400).send("ERROR : " + err.message);
+    res.status(400).send("ERROR: " + err.message);
   }
 });
 
