@@ -4,16 +4,18 @@ const validateSignUpData = (req) => {
   console.log(req.body);
 
   const { firstName, lastName, emailId, password } = req.body;
+  req.body.firstName = firstName.trim()
+  req.body.lastName = lastName.trim()
 
   if (!firstName && !lastName && !emailId && !password) {
     throw new Error("Please enter details to proceed!");
   } else if (
-    !validator.isAlpha(firstName) ||
-    firstName.length < 3 ||
-    firstName.length > 50 ||
-    !validator.isAlpha(lastName) ||
-    lastName.length < 3 ||
-    lastName.length > 50
+    !validator.matches(req.body.firstName, /^[A-Za-z\s]+$/) ||
+    req.body.firstName.length < 3 ||
+    req.body.firstName.length > 50 ||
+    !validator.matches(req.body.lastName, /^[A-Za-z\s]+$/) ||
+    req.body.lastName.length < 3 ||
+    req.body.lastName.length > 50
   ) {
     throw new Error(
       "Minimum 3 to maximum 50 alphabet only characters required in first name and Last name."
@@ -44,23 +46,25 @@ const validateEditProfileData = (req) => {
   if (!isEditAllowed) {
     throw new Error("Invalid Edit Request");
   }
-
+  
   const errors = [];
 
   // Check firstName if present
   if (req.body.firstName !== undefined) {
-    if (!validator.isAlpha(req.body.firstName) || 
-        req.body.firstName.length < 3 || 
-        req.body.firstName.length > 50) {
+    req.body.firstName = req.body.firstName.trim();
+    if (!validator.matches(req.body.firstName, /^[A-Za-z\s]+$/) ||
+    req.body.firstName.length < 3 ||
+    req.body.firstName.length > 50) {
       errors.push("First name must contain 3-50 alphabetical characters only.");
     }
   }
 
   // Check lastName if present
   if (req.body.lastName !== undefined) {
-    if (!validator.isAlpha(req.body.lastName) || 
-        req.body.lastName.length < 3 || 
-        req.body.lastName.length > 50) {
+    req.body.lastName = req.body.lastName.trim();
+    if (!validator.matches(req.body.lastName, /^[A-Za-z\s]+$/) ||
+    req.body.lastName.length < 3 ||
+    req.body.lastName.length > 50) {
       errors.push("Last name must contain 3-50 alphabetical characters only.");
     }
   }
@@ -97,6 +101,7 @@ const validateEditProfileData = (req) => {
 
   // Check about if present
   if (req.body.about !== undefined) {
+    req.body.about = req.body.about.trim();
     if (req.body.about.length > 500) {
       errors.push("About section cannot exceed 500 characters.");
     }
@@ -129,8 +134,7 @@ const validateEditProfileData = (req) => {
 function isValidPhotoUrl(url) {
   try {
     new URL(url);
-    const validImageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
-    return validImageExtensions.some(ext => url.toLowerCase().endsWith(ext));
+    return true;
   } catch (e) {
     return false;
   }
