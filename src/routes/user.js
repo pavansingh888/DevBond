@@ -92,7 +92,7 @@ userRouter.get("/feed", userAuth, async (req,res)=>{
          
         // const page= parseInt(req.query.page) || 1;
         let limit= parseInt(req.query.limit) || 5;
-        limit > 10 ? 10 : limit;
+        limit = Math.min(limit, 10);
         // const skip = (page-1)*limit;
 
         const connectionRequests = await ConnectionRequest.find({
@@ -115,10 +115,19 @@ userRouter.get("/feed", userAuth, async (req,res)=>{
             ]
         })
         .select(USER_SAFE_DATA)
-        // .skip(skip)
         .limit(limit);
         // console.log(users);
-        res.json({data:users});
+        // Fisher-Yates Shuffle Function
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+            return array;
+        }
+
+        const shuffledUsers = shuffleArray(users); // Shuffle the fetched users
+        res.json({ data: shuffledUsers });
     }catch(err){
         res.status(400).json({message:err.message});
     }
